@@ -29,7 +29,7 @@ import joblib,os
 import pandas as pd
 
 # Vectorizer
-news_vectorizer = open("resources/tfidfvect.pkl","rb")
+news_vectorizer = open("resources/lr_tfidfvect.pkl","rb")
 tweet_cv = joblib.load(news_vectorizer) # loading your vectorizer from the pkl file
 
 # Load your raw data
@@ -41,7 +41,7 @@ def main():
 
 	# Creates a main title and subheader on your page -
 	# these are static across all pages
-	st.title("Climate Change Tweet Classifer")
+	st.title("Climate Change Tweet Classifier")
 	st.subheader("Classify tweets regarding climate change")
 
 	# Creating sidebar with selection box -
@@ -49,24 +49,30 @@ def main():
 	options = ["Prediction", "Information", "Model information"]
 	selection = st.sidebar.selectbox("Choose Option", options)
 
+	# Building out the "Model information" page
+	if selection == "Model information":
+		st.info("Model information")
+		st.markdown("The model that was chosen is a logistic regression model with tuned hyperparameters.")
+
 	# Building out the "Information" page
 	if selection == "Information":
 		st.info("General Information")
 		# You can read a markdown file from supporting resources folder
 		st.markdown("Prediction of sentiment regarding climate change from tweet data using an ML Model")
 
-		st.subheader("Raw Twitter data and label")
-		if st.checkbox('Show raw data'): # data is hidden if box is unchecked
+		st.subheader("Raw Twitter data")
+		if st.sidebar.checkbox('Show raw data'): # data is hidden if box is unchecked
 			st.write(raw[['sentiment', 'message']]) # will write the df to the page
-	
-	# Building out the "Model information" page
-	if selection == "Model information":
-		st.info("Model information")
-		st.markdown("The model that was chosen is a logistic regression model with tuned hyperparameters.")
+		if st.sidebar.checkbox('Show bar chart'): # data is hidden if box is unchecked
+			st.bar_chart(raw['sentiment'].value_counts()) # shows distribution of sentiment
 
-	# Building out the "Predication" page
+	# Building out the "Prediction" page
 	if selection == "Prediction":
 		st.info("Enter text, then click Classify to obtain a prediction")
+		st.sidebar.info("2 - News: the tweet links to factual news about climate change")
+		st.sidebar.info("1 - Pro: the tweet supports the belief of man-made climate change")
+		st.sidebar.info("0 - Neutral: the tweet neither supports nor refutes the belief of man-made climate change")
+		st.sidebar.info("-1 - Anti: the tweet does not believe in man-made climate change Variable definitions")
 		# Creating a text box for user input
 		tweet_text = st.text_area("Enter Text","Type Here")
 
@@ -75,7 +81,7 @@ def main():
 			vect_text = tweet_cv.transform([tweet_text]).toarray()
 			# Load your .pkl file with the model of your choice + make predictions
 			# Try loading in multiple models to give the user a choice
-			predictor = joblib.load(open(os.path.join("resources/Logistic_regression.pkl"),"rb"))
+			predictor = joblib.load(open(os.path.join("resources/lr_model.pkl"),"rb"))
 			prediction = predictor.predict(vect_text)
 
 			# When model has successfully run, will print prediction
